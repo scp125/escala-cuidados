@@ -4,6 +4,13 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0">
 <title>Escala de Cuidados</title>
+<link rel="manifest" href="manifest.json">
+<link rel="apple-touch-icon" href="apple-touch-icon.png">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<meta name="apple-mobile-web-app-title" content="Cuidados">
+<meta name="theme-color" content="#1c1814">
+<meta name="mobile-web-app-capable" content="yes">
 <link href="https://fonts.googleapis.com/css2?family=Lora:ital,wght@0,400;0,600;1,400&family=DM+Sans:wght@300;400;500;600&display=swap" rel="stylesheet">
 <style>
 :root{
@@ -134,6 +141,10 @@ body{font-family:'DM Sans',sans-serif;background:var(--bg);color:var(--ink);min-
    7 day columns + 1 label col
    label=36px, 7 cols share rest: (360-36)/7 = 46px each → total 360px fits
 ─────────────────────────────────────────────────── */
+.view-mode-tabs{display:flex;gap:0;margin-bottom:10px;background:var(--surface);border:1px solid var(--border);border-radius:var(--r);overflow:hidden}
+.vm-tab{flex:1;padding:10px 6px;font-family:'DM Sans',sans-serif;font-size:11px;font-weight:600;border:none;background:transparent;color:var(--ink3);cursor:pointer;transition:all .15s;border-right:1px solid var(--border);white-space:nowrap}
+.vm-tab:last-child{border-right:none}
+.vm-tab.active{background:var(--copper);color:#fff}
 .cal-period-bar{display:flex;align-items:center;justify-content:space-between;padding:10px 12px;background:var(--surface);border-bottom:1px solid var(--border);flex-wrap:wrap;gap:6px}
 .cal-period-label{font-family:'Lora',serif;font-size:13px;color:var(--ink)}
 .rep-btns{display:flex;gap:10px}
@@ -164,6 +175,20 @@ body{font-family:'DM Sans',sans-serif;background:var(--bg);color:var(--ink);min-
 .epill-name{overflow:hidden;text-overflow:ellipsis;white-space:nowrap;width:100%;display:block}
 .epill-time{font-size:7px;opacity:.7;white-space:nowrap;display:block}
 .epill-del{position:absolute;right:-2px;top:-2px;width:12px;height:12px;border-radius:50%;background:var(--ink);color:#fff;border:none;font-size:7px;display:none;align-items:center;justify-content:center;cursor:pointer;line-height:1;z-index:2}
+.epill.swapped{border-left-width:2px}
+.cal-cell.swap-picked{box-shadow:inset 0 0 0 2.5px var(--ai);background:var(--ai-pale)!important}
+.epill-swap-badge{position:absolute;left:-1px;bottom:-1px;font-size:7px;line-height:1;background:#fff;border-radius:50%;width:10px;height:10px;display:flex;align-items:center;justify-content:center;box-shadow:0 0 0 1px rgba(0,0,0,.15)}
+/* Swap modal */
+.swap-section{margin-bottom:16px}
+.swap-row{display:flex;align-items:center;gap:8px;margin-bottom:10px}
+.swap-arrow{font-size:18px;color:var(--ink3);flex-shrink:0}
+.swap-summary{background:var(--ai-pale);border:1.5px solid var(--ai-border);border-radius:10px;padding:12px 14px;font-size:13px;color:var(--ink);line-height:1.6;margin-top:6px}
+.swap-summary b{color:var(--ai)}
+.troca-list-item{display:flex;align-items:center;gap:10px;padding:10px 12px;background:var(--bg);border-radius:8px;margin-bottom:8px;border:1px solid var(--border);font-size:13px}
+.troca-list-item .tli-body{flex:1}
+.troca-badge{font-size:10px;font-weight:700;padding:2px 8px;border-radius:10px}
+.troca-badge.pendente{background:#fff3cd;color:#8a6d00}
+.troca-badge.compensado{background:var(--prof);color:var(--prof-t)}
 .epill:hover .epill-del,.epill:focus-within .epill-del{display:flex}
 
 /* ── AI PANEL ── */
@@ -243,6 +268,20 @@ body{font-family:'DM Sans',sans-serif;background:var(--bg);color:var(--ink);min-
 
 /* ── EMPTY ── */
 .empty{padding:28px 20px;text-align:center;color:var(--ink3);font-size:13px;line-height:1.6}
+
+/* ── FDS MODE — visualização ampliada para celular ── */
+.cal-grid.fds-mode{gap:2px}
+.cal-grid.fds-mode .gh{font-size:13px;padding:10px 4px;font-weight:800}
+.cal-grid.fds-mode .gh .ghd{font-size:11px;margin-top:2px}
+.cal-grid.fds-mode .slbl{font-size:11px;writing-mode:horizontal-tb;transform:none;letter-spacing:.03em;padding:4px 2px}
+.cal-grid.fds-mode .cal-cell{min-height:96px;padding:8px 6px}
+.cal-grid.fds-mode .epill{font-size:15px;padding:8px 10px;border-left-width:4px;margin-bottom:6px;border-radius:6px}
+.cal-grid.fds-mode .epill-name{font-size:16px;font-weight:700;white-space:normal}
+.cal-grid.fds-mode .epill-time{font-size:13px;margin-top:2px}
+.cal-grid.fds-mode .epill-del{width:20px;height:20px;font-size:12px;top:-6px;right:-6px}
+.cal-grid.fds-mode .cell-plus{font-size:28px}
+.cal-week.fds-mode .cal-period-label{font-size:16px;font-weight:700}
+.cal-week.fds-mode .rep-btn{font-size:13px}
 .empty-icon{font-size:32px;margin-bottom:8px}
 
 @media print{
@@ -358,7 +397,7 @@ body{font-family:'DM Sans',sans-serif;background:var(--bg);color:var(--ink);min-
       <div class="topbar-title">Escala <em>Semanal</em></div>
     </div>
     <div class="topbar-actions">
-      <button class="topbar-icon" onclick="imprimirEscala()" title="Imprimir">⎙</button>
+      <button class="topbar-icon" onclick="imprimirEscala()" title="Imprimir (segue a visualização ativa)">⎙</button>
       <button class="btn-back" onclick="goBack()">← Início</button>
     </div>
   </div>
@@ -373,7 +412,20 @@ body{font-family:'DM Sans',sans-serif;background:var(--bg);color:var(--ink);min-
           <div class="field"><label>Início</label><input type="date" id="date-start"></div>
           <div class="field"><label>Fim</label><input type="date" id="date-end"></div>
         </div>
-        <button class="btn btn-copper" onclick="gerarSemanas()">Gerar calendário</button>
+        <div class="btn-row" style="gap:8px">
+          <button class="btn btn-copper" onclick="gerarSemanas()" style="flex:1">Gerar calendário</button>
+          <button class="btn btn-ghost btn-sm" id="btn-limpar-cal" onclick="limparCalendario()" title="Limpar todos os turnos">🗑 Limpar</button>
+        </div>
+      </div>
+    </div>
+
+    <!-- TROCAR PLANTÃO -->
+    <div class="card" id="troca-card" style="display:none">
+      <div class="card-head"><span class="card-title">🔄 Trocas de Plantão</span></div>
+      <div class="card-body">
+        <button class="btn btn-ghost" id="btn-modo-troca" onclick="toggleSwapMode()">🔄 Ativar Modo Troca</button>
+        <div id="swap-mode-hint" style="display:none;font-size:12px;color:var(--ai);background:var(--ai-pale);border:1px solid var(--ai-border);border-radius:8px;padding:10px 12px;margin-top:10px;line-height:1.5"></div>
+        <div id="trocas-list" style="margin-top:12px"></div>
       </div>
     </div>
 
@@ -398,8 +450,23 @@ body{font-family:'DM Sans',sans-serif;background:var(--bg);color:var(--ink);min-
         </div>
         <div class="field"><label>Início sábado</label><input type="time" id="ai-start-time" value="08:00"></div>
       </div>
+      <div class="field">
+        <label>Regra de rotação</label>
+        <select id="ai-regra">
+          <option value="parfixo" selected>Pares fixos — A faz sáb, B faz dom; semana seguinte trocam (só funciona com 2 por FDS)</option>
+          <option value="deslizante">Deslizante — quem faz sáb faz dom na semana seguinte, depois folga até o ciclo voltar</option>
+          <option value="bloco">Em bloco — grupos fixos, revezam sem repetir até esgotar todos</option>
+        </select>
+      </div>
       <button class="btn btn-ai" id="btn-ia" onclick="preencherFDS()">✦ Preencher finais de semana</button>
       <div class="ai-status" id="ai-status"></div>
+    </div>
+
+    <!-- View mode tabs -->
+    <div class="view-mode-tabs" id="view-mode-tabs">
+      <button class="vm-tab active" data-mode="completo" onclick="setViewMode('completo')">📅 Completo</button>
+      <button class="vm-tab" data-mode="semana" onclick="setViewMode('semana')">📋 Dias de Semana</button>
+      <button class="vm-tab" data-mode="fds" onclick="setViewMode('fds')">🏖️ Fim de Semana</button>
     </div>
 
     <!-- Calendar weeks rendered here, one after another -->
@@ -491,6 +558,7 @@ body{font-family:'DM Sans',sans-serif;background:var(--bg);color:var(--ink);min-
   </div>
   <div class="page-scroll">
     <div class="report-row" onclick="imprimirEscala()"><div class="ri">📅</div><div><div class="rl">Imprimir Escala</div><div class="rs">PDF da escala completa</div></div></div>
+    
     <div class="report-row" onclick="imprimirAtividades()"><div class="ri">📋</div><div><div class="rl">Imprimir Atividades</div><div class="rs">Lista completa de tarefas</div></div></div>
     <div class="report-row" onclick="imprimirRemedios()"><div class="ri">💊</div><div><div class="rl">Imprimir Remédios</div><div class="rs">Tabela de medicamentos</div></div></div>
     <div class="report-row" onclick="compartilharTexto('atividades')"><div class="ri">↗</div><div><div class="rl">Compartilhar Atividades</div><div class="rs">Enviar lista pelo WhatsApp</div></div></div>
@@ -591,6 +659,7 @@ let people=[], weeks=[], activeWeek=0;
 let activities=[], remedios=[], notices=[];
 let selColorFilho=0, selColorProf=0, aiSelectedPeople=[];
 let modalCtx=null, modalEditIdx=null, modalSelPerson=null;
+let trocas=[]; // [{personA, personB, wi, dia, turno, compensado:bool, compWi, compDia, compTurno}]
 let pageHistory=['page-home'];
 
 // ══════════════════════════════════════════
@@ -601,7 +670,7 @@ function goTo(id){
   document.getElementById(id).classList.add('active');
   window.scrollTo(0,0);
   if(pageHistory[pageHistory.length-1]!==id) pageHistory.push(id);
-  if(id==='page-escala'){ syncDateInputs(); renderCalendar(); updateAIPanel(); }
+  if(id==='page-escala'){ syncDateInputs(); renderCalendar(); updateAIPanel(); updateTrocaCardVisibility(); renderTrocasList(); }
   if(id==='page-atividades'){ populateActPerson(); renderActivities(); }
   if(id==='page-remedios') renderRemedios();
   if(id==='page-cadastro') renderAllPeople();
@@ -631,6 +700,7 @@ function save(){
     localStorage.setItem('ec6_acts',JSON.stringify(activities));
     localStorage.setItem('ec6_rems',JSON.stringify(remedios));
     localStorage.setItem('ec6_notices',JSON.stringify(notices));
+    localStorage.setItem('ec6_trocas',JSON.stringify(trocas));
   }catch(e){}
 }
 function load(){
@@ -643,6 +713,7 @@ function load(){
     const ac=localStorage.getItem('ec6_acts'); if(ac) activities=JSON.parse(ac);
     const re=localStorage.getItem('ec6_rems'); if(re) remedios=JSON.parse(re);
     const no=localStorage.getItem('ec6_notices'); if(no) notices=JSON.parse(no);
+    const tr=localStorage.getItem('ec6_trocas'); if(tr) trocas=JSON.parse(tr);
   }catch(e){}
 }
 function syncDateInputs(){
@@ -736,16 +807,86 @@ function toggleAIP(i){
   renderAIPeoplePick();
 }
 function buildSlots(n){ const total=FDS_SHIFTS.length,base=Math.floor(total/n),rem=total%n; const slots=[]; let idx=0; for(let i=0;i<n;i++){const c=base+(i<rem?1:0);slots.push(FDS_SHIFTS.slice(idx,idx+c));idx+=c;} return slots; }
+function buildPairSchedule(sel){
+  // Groups selected people into consecutive pairs. Odd one out pairs with the FIRST person
+  // but only occupies ONE week (no swap), keeping full cycle length = sel.length weeks.
+  const n=sel.length;
+  const schedule=[]; // array of [sabIdx, domIdx] (each is an index INTO sel[])
+  let i=0;
+  while(i<n){
+    if(i+1<n){
+      schedule.push([i,i+1]);   // week: sab=sel[i], dom=sel[i+1]
+      schedule.push([i+1,i]);   // next week: swapped
+      i+=2;
+    } else {
+      schedule.push([i,0]);     // odd one out pairs with first person, ONE week only
+      i+=1;
+    }
+  }
+  return schedule; // length === n (one full cycle = n weeks)
+}
+
+function buildCustomShiftTimes(startTime){
+  // Build M/T/N time windows starting from a custom Saturday start hour,
+  // preserving 6h blocks: M, T, N(=12h overnight block)
+  const [sh,sm]=startTime.split(':').map(Number);
+  const toHHMM=(totalMin)=>{
+    const m=((totalMin%1440)+1440)%1440;
+    return String(Math.floor(m/60)).padStart(2,'0')+':'+String(m%60).padStart(2,'0');
+  };
+  const startM=sh*60+sm;
+  return {
+    m:{start:toHHMM(startM),        end:toHHMM(startM+360)},   // +6h
+    t:{start:toHHMM(startM+360),    end:toHHMM(startM+720)},   // +6h
+    n:{start:toHHMM(startM+720),    end:toHHMM(startM+1440)}   // +12h (overnight)
+  };
+}
+
 function preencherFDS(){
   const sel=aiSelectedPeople.slice(); if(!sel.length){setAIS('Selecione ao menos 1 cuidador.','err');return;}
   const pf=parseInt(document.getElementById('ai-per-fds').value)||2;
   if(sel.length<pf){setAIS('Selecione ao menos '+pf+' cuidadores.','err');return;}
-  const slotDefs=buildSlots(pf); let filled=0, ptr=0;
-  weeks.forEach(week=>{
-    slotDefs.forEach((shiftList,si)=>{ const pi=sel[(ptr+si)%sel.length]; shiftList.forEach(([dia,turno])=>{ const key=turno+'_'+dia; if(!week.entries[key]) week.entries[key]=[]; week.entries[key]=week.entries[key].filter(e=>!e._ai); week.entries[key].push({personIdx:pi,timeStart:SHIFT_TIMES[turno].start,timeEnd:SHIFT_TIMES[turno].end,_ai:true}); filled++; }); });
-    ptr=(ptr+pf)%sel.length;
-  });
-  save(); renderCalendar(); setAIS('✓ '+filled+' turnos preenchidos.','ok');
+  const regra=document.getElementById('ai-regra').value; // 'parfixo', 'deslizante' ou 'bloco'
+  const startTime=document.getElementById('ai-start-time').value||'08:00';
+  const customTimes=buildCustomShiftTimes(startTime);
+  let filled=0;
+  const n=sel.length;
+
+  if(regra==='parfixo' && pf===2){
+    const schedule=buildPairSchedule(sel);
+    const cycleLen=schedule.length;
+    weeks.forEach((week,wi)=>{
+      const [sabPos,domPos]=schedule[wi%cycleLen];
+      const sabPi=sel[sabPos], domPi=sel[domPos];
+      ['sab','dom'].forEach((dia)=>{
+        const pi = dia==='sab'?sabPi:domPi;
+        TURNOS.forEach(turno=>{
+          const key=turno+'_'+dia;
+          if(!week.entries[key]) week.entries[key]=[];
+          week.entries[key]=week.entries[key].filter(e=>!e._ai);
+          week.entries[key].push({personIdx:pi,timeStart:customTimes[turno].start,timeEnd:customTimes[turno].end,_ai:true});
+          filled++;
+        });
+      });
+    });
+  } else {
+    const slotDefs=buildSlots(pf);
+    weeks.forEach((week,wi)=>{
+      const advance = regra==='deslizante' ? 1 : pf;
+      const base = (wi*advance) % n;
+      slotDefs.forEach((shiftList,si)=>{
+        const pi=sel[(base+si)%n];
+        shiftList.forEach(([dia,turno])=>{
+          const key=turno+'_'+dia;
+          if(!week.entries[key]) week.entries[key]=[];
+          week.entries[key]=week.entries[key].filter(e=>!e._ai);
+          week.entries[key].push({personIdx:pi,timeStart:customTimes[turno].start,timeEnd:customTimes[turno].end,_ai:true});
+          filled++;
+        });
+      });
+    });
+  }
+  save(); renderCalendar(); setAIS('✓ '+filled+' turnos preenchidos. Início: '+startTime,'ok');
 }
 function setAIS(msg,type){ const el=document.getElementById('ai-status'); if(!el) return; el.className='ai-status'+(type?' '+type:''); el.textContent=msg||''; }
 
@@ -763,6 +904,28 @@ function getWeeks(ds,de){
   while(cur<=e&&lim<52){ws.push(new Date(cur));cur=addDays(cur,7);lim++;}
   return ws;
 }
+let _clearArmed=false;
+function limparCalendario(){
+  const btn=document.getElementById('btn-limpar-cal');
+  if(!weeks.length){ setAIS('Não há calendário gerado ainda.','err'); return; }
+  if(!_clearArmed){
+    _clearArmed=true;
+    if(btn){ btn.textContent='⚠️ Confirmar limpeza?'; btn.style.background='var(--red)'; btn.style.color='#fff'; btn.style.borderColor='var(--red)'; }
+    setAIS('Toque novamente para confirmar a limpeza.','err');
+    setTimeout(()=>{
+      _clearArmed=false;
+      if(btn){ btn.textContent='🗑 Limpar'; btn.style.background=''; btn.style.color=''; btn.style.borderColor=''; }
+    },4000);
+    return;
+  }
+  _clearArmed=false;
+  if(btn){ btn.textContent='🗑 Limpar'; btn.style.background=''; btn.style.color=''; btn.style.borderColor=''; }
+  weeks.forEach(week=>{ week.entries={}; });
+  save();
+  renderCalendar();
+  setAIS('✓ Calendário limpo. Todos os turnos foram removidos.','ok');
+}
+
 function gerarSemanas(){
   const ds=document.getElementById('date-start').value,de=document.getElementById('date-end').value;
   if(!ds||!de){alert('Selecione início e fim.');return;}
@@ -770,7 +933,21 @@ function gerarSemanas(){
   const starts=getWeeks(ds,de); if(!starts.length){alert('Nenhuma semana encontrada.');return;}
   const ex={}; weeks.forEach(w=>{ex[w.start.toDateString()]=w.entries;});
   weeks=starts.map(s=>({start:new Date(s),entries:ex[s.toDateString()]||{}}));
-  activeWeek=0; save(); updateAIPanel(); renderCalendar();
+  activeWeek=0; save(); updateAIPanel(); renderCalendar(); updateTrocaCardVisibility(); renderTrocasList();
+}
+
+let viewMode='completo'; // 'completo' | 'semana' | 'fds'
+
+function setViewMode(mode){
+  viewMode=mode;
+  document.querySelectorAll('.vm-tab').forEach(t=>t.classList.toggle('active', t.dataset.mode===mode));
+  renderCalendar();
+}
+
+function getVisibleDiaIndices(){
+  if(viewMode==='semana') return [0,1,2,3,4]; // seg-sex
+  if(viewMode==='fds') return [5,6];           // sab-dom
+  return [0,1,2,3,4,5,6];                       // completo
 }
 
 function renderCalendar(){
@@ -781,9 +958,12 @@ function renderCalendar(){
   if(!weeks.length){if(empty) empty.style.display='block'; return;}
   if(empty) empty.style.display='none';
 
+  const visibleDias=getVisibleDiaIndices();
+  const numCols=visibleDias.length;
+
   weeks.forEach((week,wi)=>{
     const sunday=addDays(week.start,6);
-    const wrap=document.createElement('div'); wrap.className='cal-week';
+    const wrap=document.createElement('div'); wrap.className='cal-week'+(viewMode==='fds'?' fds-mode':'');
 
     // Period bar
     const bar=document.createElement('div'); bar.className='cal-period-bar';
@@ -795,32 +975,46 @@ function renderCalendar(){
     if(wi<weeks.length-1){const b=document.createElement('button');b.className='rep-btn';b.textContent='Replicar →';b.onclick=()=>{weeks[wi+1].entries=JSON.parse(JSON.stringify(weeks[wi].entries));save();renderCalendar();};rbtns.appendChild(b);}
     bar.appendChild(rbtns); wrap.appendChild(bar);
 
-    // Grid — no scroll wrapper, fits screen width
-    const grid=document.createElement('div'); grid.className='cal-grid';
-    // header row — build entirely as HTML string first, then set once
+    // Grid — column count depends on viewMode
+    const grid=document.createElement('div'); grid.className='cal-grid'+(viewMode==='fds'?' fds-mode':'');
+    grid.style.gridTemplateColumns = (viewMode==='fds' ? '40px' : '16px') + ' repeat('+numCols+',1fr)';
+
     let headerHTML='<div class="gh"></div>';
-    DIAS_L.forEach((dl,di)=>{
+    visibleDias.forEach(di=>{
+      const dl=DIAS_L[di];
       const dd=addDays(week.start,di); const we=di>=5;
       headerHTML+='<div class="gh'+(we?' we':'')+'">'+dl+'<span class="ghd">'+fmt(dd)+'</span></div>';
     });
     grid.innerHTML=headerHTML;
-    // shift rows — only appendChild after innerHTML is set
+
     TURNOS.forEach(turno=>{
       const sl=document.createElement('div'); sl.className='slbl '+turno; sl.textContent=TURNO_L[turno]; grid.appendChild(sl);
-      DIAS.forEach((dia,di)=>{
-        const cell=document.createElement('div'); cell.className='cal-cell '+turno+(di>=5?' we':'');
+      visibleDias.forEach(di=>{
+        const dia=DIAS[di];
+        const cell=document.createElement('div');
+        let cellExtra='';
+        if(swapMode && swapStep===2 && swapPickedShift && swapPickedShift.wi===wi && swapPickedShift.dia===dia && swapPickedShift.turno===turno){
+          cellExtra=' swap-picked';
+        }
+        cell.className='cal-cell '+turno+(di>=5?' we':'')+cellExtra;
         const key=turno+'_'+dia; const entries=week.entries[key]||[];
         entries.forEach((entry,ei)=>{
           const p=people[entry.personIdx]; if(!p) return;
           const c=COLORS[p.colorIdx||0];
           const pill=document.createElement('div'); pill.className='epill';
           pill.style.cssText='background:'+c.bg+';color:'+c.text+';border-left-color:'+c.dot;
-          pill.innerHTML='<div class="epill-body"><div class="epill-name">'+p.name+'</div>'+(entry.timeStart?'<span class="epill-time">'+entry.timeStart+(entry.timeEnd?'–'+entry.timeEnd:'')+'</span>':'')+'</div><button class="epill-del" onclick="delEntry(event,'+wi+',\''+key+'\','+ei+')">×</button>';
-          pill.addEventListener('click',e=>{if(e.target.classList.contains('epill-del'))return;openModal(wi,turno,dia,di,ei,entry);});
+          const swapBadge = entry._troca ? '<span class="epill-swap-badge" title="Troca de plantão">🔄</span>' : '';
+          pill.className = 'epill' + (entry._troca?' swapped':'');
+          pill.innerHTML=swapBadge+'<div class="epill-body"><div class="epill-name">'+p.name+'</div>'+(entry.timeStart?'<span class="epill-time">'+entry.timeStart+(entry.timeEnd?'–'+entry.timeEnd:'')+'</span>':'')+'</div><button class="epill-del" onclick="delEntry(event,'+wi+',\''+key+'\','+ei+')">×</button>';
+          pill.addEventListener('click',e=>{
+            if(e.target.classList.contains('epill-del'))return;
+            if(swapMode){ handleSwapCellClick(wi,turno,dia,di,ei,entry.personIdx); return; }
+            openModal(wi,turno,dia,di,ei,entry);
+          });
           cell.appendChild(pill);
         });
         const plus=document.createElement('div');plus.className='cell-plus';plus.textContent='+';cell.appendChild(plus);
-        cell.addEventListener('click',e=>{if(e.target.closest('.epill'))return;openModal(wi,turno,dia,di,null,null);});
+        cell.addEventListener('click',e=>{if(e.target.closest('.epill'))return;if(swapMode)return;openModal(wi,turno,dia,di,null,null);});
         grid.appendChild(cell);
       });
     });
@@ -968,29 +1162,83 @@ function openPrintWindow(h){
   const tip = document.getElementById('_print_tip');
   if(tip){ tip.style.display='flex'; setTimeout(()=>tip.style.display='none', 8000); }
 }
-function printBase(){return'<!DOCTYPE html><html><head><meta charset="UTF-8"><style>@page{size:landscape;margin:.8cm}*{box-sizing:border-box;margin:0;padding:0}body{font-family:system-ui,sans-serif;padding:14px;color:#1c1814;font-size:11px}h2{font-size:17px;font-weight:600;margin-bottom:3px}.sub{font-size:10px;color:#9a8f84;margin-bottom:10px}table{width:100%;border-collapse:collapse}th,td{border:1px solid #e2dbd2;padding:5px 7px;vertical-align:top;font-size:10px}thead th{background:#1c1814;color:rgba(255,255,255,.85);font-size:9px;letter-spacing:.05em;text-transform:uppercase}.pill{display:inline-block;padding:2px 6px;border-radius:3px;margin-bottom:2px;font-size:9px;line-height:1.3}.pill b{display:block;font-weight:600}.pill span{opacity:.7;font-size:8px}.empty{color:#ccc;font-size:12px}.tag{display:inline-block;padding:1px 6px;border-radius:8px;font-size:8px;font-weight:600;margin:1px}.done{text-decoration:line-through;opacity:.5}.stitle{font-size:13px;font-weight:600;margin:14px 0 6px;padding:4px 8px;border-radius:4px}ul{padding-left:14px;margin:0}li{font-size:11px;margin-bottom:4px;line-height:1.4}.meta{font-size:9px;color:#9a8f84}.week-break{margin-top:14px}.rpill{display:inline-block;padding:2px 7px;border-radius:10px;font-size:9px;font-weight:600;margin:1px}.cat-head{font-size:11px;font-weight:700;padding:5px 8px;border-radius:4px 4px 0 0;margin-top:10px}.rem-row{padding:5px 8px;border-bottom:1px solid #e2dbd2;font-size:10px}.rem-nome{font-weight:600}.rem-dose{opacity:.7;font-size:9px}.rem-obs{color:#9a8f84;font-size:9px;font-style:italic}</style></head><body>';}
+function askFilename(defaultName){
+  const r = prompt('Nome do arquivo para impressão/PDF:', defaultName);
+  return (r && r.trim()) ? r.trim() : defaultName;
+}
+
+function printBase(title){return'<!DOCTYPE html><html><head><meta charset="UTF-8"><title>'+(title||'Documento')+'</title><style>@page{size:landscape;margin:.8cm}*{box-sizing:border-box;margin:0;padding:0}body{font-family:system-ui,sans-serif;padding:14px;color:#1c1814;font-size:11px}h2{font-size:20px;font-weight:700;margin-bottom:4px;color:#1c1814;letter-spacing:-.01em}.sub{font-size:13px;color:#1c1814;margin-bottom:10px;font-weight:600}.sub b{color:#b5703a;font-weight:800}table{width:100%;border-collapse:collapse}th,td{border:1px solid #e2dbd2;padding:5px 7px;vertical-align:top;font-size:10px}thead th{background:#f1ece3;color:#5a5047;font-size:9px;letter-spacing:.05em;text-transform:uppercase;border-bottom:2px solid #b5703a}thead th.we-head{background:#fbe9d8;color:#8b4a16}.pill{display:inline-block;padding:2px 6px;border-radius:3px;margin-bottom:2px;font-size:9px;line-height:1.3}.pill b{display:block;font-weight:600}.pill span{opacity:.7;font-size:8px}.empty{color:#ccc;font-size:12px}.tag{display:inline-block;padding:1px 6px;border-radius:8px;font-size:8px;font-weight:600;margin:1px}.done{text-decoration:line-through;opacity:.5}.stitle{font-size:13px;font-weight:600;margin:14px 0 6px;padding:4px 8px;border-radius:4px}ul{padding-left:14px;margin:0}li{font-size:11px;margin-bottom:4px;line-height:1.4}.meta{font-size:9px;color:#9a8f84}.week-break{margin-top:14px}.rpill{display:inline-block;padding:2px 7px;border-radius:10px;font-size:9px;font-weight:600;margin:1px}.cat-head{font-size:11px;font-weight:700;padding:5px 8px;border-radius:4px 4px 0 0;margin-top:10px}.rem-row{padding:5px 8px;border-bottom:1px solid #e2dbd2;font-size:10px}.rem-nome{font-weight:600}.rem-dose{opacity:.7;font-size:9px}.rem-obs{color:#9a8f84;font-size:9px;font-style:italic}</style></head><body>';}
 function imprimirEscala(){
   if(!weeks.length)return;
+  if(viewMode==='fds'){ imprimirFinaisDeSemana(); return; }
   const sc={m:'#fffbec',t:'#edf7f2',n:'#eeeef8'};
   const sl={m:'Manhã',t:'Tarde',n:'Noite'};
+  const visibleDias=getVisibleDiaIndices(); // segue o modo de visualização ativo na tela
+  const modeLabel = viewMode==='semana' ? ' — Dias de Semana' : viewMode==='fds' ? ' — Fim de Semana' : '';
   // Group weeks into pages of 5
   const pages=[];
   for(let i=0;i<weeks.length;i+=5) pages.push(weeks.slice(i,i+5).map((w,j)=>({w,wi:i+j})));
   let body='';
   pages.forEach((pageWeeks,pi)=>{
     if(pi>0) body+='<div style="page-break-before:always;padding-top:10px"></div>';
-    body+='<h2>Escala de Cuidados</h2>';
+    body+='<h2>Escala de Cuidados'+modeLabel+'</h2>';
     pageWeeks.forEach(({w:week,wi},idx)=>{
       const sunday=addDays(week.start,6);
-      const thCols=DIAS_L.map((dl,di)=>'<th'+(di>=5?' style="color:#b5703a"':'')+'>'+dl+'<br><span style="font-weight:400;font-size:8px;opacity:.6">'+fmt(addDays(week.start,di))+'</span></th>').join('');
-      const rows=TURNOS.map(turno=>'<tr><td style="background:'+sc[turno]+';font-weight:700;font-size:8px;text-transform:uppercase;text-align:center;white-space:nowrap;width:42px">'+sl[turno]+'</td>'+DIAS.map(dia=>{const key=turno+'_'+dia;const entries=week.entries[key]||[];return'<td style="background:'+sc[turno]+';padding:3px 4px">'+(entries.map(entry=>{const p=people[entry.personIdx];if(!p)return'';const c=COLORS[p.colorIdx||0];return'<div class="pill" style="background:'+c.bg+';color:'+c.text+'"><b>'+p.name+'</b><span>'+(entry.timeStart||'')+(entry.timeEnd?'–'+entry.timeEnd:'')+'</span></div>';}).join('')||'<span class="empty">·</span>')+'</td>';}).join('')+'</tr>').join('');
+      const thCols=visibleDias.map(di=>'<th'+(di>=5?' class="we-head"':'')+'>'+DIAS_L[di]+'<br><span style="font-weight:400;font-size:8px;opacity:.7">'+fmt(addDays(week.start,di))+'</span></th>').join('');
+      const rows=TURNOS.map(turno=>'<tr><td style="background:'+sc[turno]+';font-weight:700;font-size:8px;text-transform:uppercase;text-align:center;white-space:nowrap;width:42px">'+sl[turno]+'</td>'+visibleDias.map(di=>{const dia=DIAS[di];const key=turno+'_'+dia;const entries=week.entries[key]||[];return'<td style="background:'+sc[turno]+';padding:3px 4px">'+(entries.map(entry=>{const p=people[entry.personIdx];if(!p)return'';const c=COLORS[p.colorIdx||0];return'<div class="pill" style="background:'+c.bg+';color:'+c.text+'"><b>'+p.name+'</b><span>'+(entry.timeStart||'')+(entry.timeEnd?'–'+entry.timeEnd:'')+'</span></div>';}).join('')||'<span class="empty">·</span>')+'</td>';}).join('')+'</tr>').join('');
       body+=(idx>0?'<div class="week-break"></div>':'')+'<p class="sub"><b>'+(weeks.length>1?'Semana '+(wi+1)+' ':'')+'</b>'+fmtFull(week.start)+' → '+fmtFull(sunday)+'</p><table><thead><tr><th style="width:42px">Turno</th>'+thCols+'</tr></thead><tbody>'+rows+'</tbody></table>';
     });
   });
-  openPrintWindow(printBase()+body+'</body></html>');
+  const _defaultName1 = 'Escala de Cuidados' + (viewMode==='semana'?' - Dias de Semana':viewMode==='fds'?' - Fim de Semana':'');
+  const _fn1=askFilename(_defaultName1);
+  openPrintWindow(printBase(_fn1)+body+'</body></html>', _fn1);
 }
-function imprimirAtividades(){const dated=activities.filter(a=>a.date).sort((a,b)=>a.date.localeCompare(b.date));const undated=activities.filter(a=>!a.date);function ri(a){const p=a.personIdx!=null?people[a.personIdx]:null;const c=p?COLORS[p.colorIdx||0]:null;const meta=[];if(a.date)meta.push(fmtDate(a.date));if(a.time)meta.push(a.time+'h');if(p)meta.push('<span class="tag" style="background:'+c.bg+';color:'+c.text+'">'+p.name+'</span>');return'<li class="'+(a.done?'done':'')+'"><b>'+a.desc+'</b>'+(meta.length?' <span class="meta">'+meta.join(' · ')+'</span>':'')+'</li>';}openPrintWindow(printBase()+'<h2>Atividades Extras</h2>'+(dated.length?'<div class="stitle">Com data</div><ul>'+dated.map(ri).join('')+'</ul>':'')+(undated.length?'<div class="stitle">Sem data</div><ul>'+undated.map(ri).join('')+'</ul>':'')+'</body></html>');}
-function imprimirRemedios(){const sc={m:'#fffbec',t:'#edf7f2',n:'#eeeef8'};const items=remedios.map(r=>'<tr><td><b>'+r.nome+'</b>'+(r.dose?'<br><span style="font-size:10px;color:#9a8f84">'+r.dose+'</span>':'')+'</td><td style="background:'+sc.m+'">'+(r.manha?'✓ 07h':'')+'</td><td style="background:'+sc.t+'">'+(r.almoco?'✓ 12h':'')+'</td><td style="background:'+sc.n+'">'+(r.jantar?'✓ 18h':'')+'</td><td style="color:#9a8f84;font-size:10px">'+(r.obs||'')+'</td></tr>').join('');openPrintWindow(printBase()+'<h2>Remédios</h2><table style="margin-top:12px"><thead><tr><th>Remédio</th><th>Manhã</th><th>Almoço</th><th>Jantar</th><th>Obs.</th></tr></thead><tbody>'+(items||'<tr><td colspan="5" style="text-align:center;color:#9a8f84">Nenhum.</td></tr>')+'</tbody></table></body></html>');}
+function imprimirFinaisDeSemana(){
+  if(!weeks.length){ setAIS && setAIS('Nenhum calendário gerado.','err'); return; }
+  const sc={m:'#fffbec',t:'#edf7f2',n:'#eeeef8'};
+  const sl={m:'Manhã',t:'Tarde',n:'Noite'};
+  const slSub={m:'07–12h',t:'12–18h',n:'18–07h'};
+  // Fewer weeks per page since rows are large now — fits ~4 comfortably
+  const pages=[];
+  for(let i=0;i<weeks.length;i+=4) pages.push(weeks.slice(i,i+4).map((w,j)=>({w,wi:i+j})));
+  let body='';
+  pages.forEach((pageWeeks,pi)=>{
+    if(pi>0) body+='<div style="page-break-before:always;padding-top:14px"></div>';
+    body+='<h2 style="font-size:28px">🏖️ Escala — Finais de Semana</h2>';
+    pageWeeks.forEach(({w:week,wi},idx)=>{
+      const sab=addDays(week.start,5), dom=addDays(week.start,6);
+      const thCols='<th class="we-head" style="font-size:22px;padding:16px">Sábado<br><span style="font-weight:500;font-size:16px;opacity:.8">'+fmt(sab)+'</span></th>'+
+                   '<th class="we-head" style="font-size:22px;padding:16px">Domingo<br><span style="font-weight:500;font-size:16px;opacity:.8">'+fmt(dom)+'</span></th>';
+      const rows=TURNOS.map(turno=>{
+        const tds=['sab','dom'].map(dia=>{
+          const key=turno+'_'+dia; const entries=week.entries[key]||[];
+          let inner;
+          if(entries.length){
+            inner=entries.map(entry=>{
+              const p=people[entry.personIdx]; if(!p) return '';
+              const c=COLORS[p.colorIdx||0];
+              return '<div class="pill" style="background:'+c.bg+';color:'+c.text+';font-size:22px;padding:12px 18px;margin-bottom:7px;border-radius:8px"><b style="font-size:23px;display:block">'+p.name+'</b><span style="font-size:17px;opacity:.8">'+(entry.timeStart||'')+(entry.timeEnd?'–'+entry.timeEnd:'')+'</span></div>';
+            }).join('');
+          } else {
+            inner='<div style="display:flex;align-items:center;justify-content:center;height:72px;color:#c9beb2;font-size:18px;font-style:italic;border:2px dashed #d8d0c4;border-radius:8px">sem cuidador</div>';
+          }
+          return '<td style="background:'+sc[turno]+';padding:14px 16px;width:48%;vertical-align:middle">'+inner+'</td>';
+        }).join('');
+        return '<tr><td style="background:'+sc[turno]+';font-weight:800;font-size:18px;text-transform:uppercase;text-align:center;white-space:nowrap;width:80px;vertical-align:middle">'+sl[turno]+'<br><span style="font-weight:500;font-size:13px;opacity:.75;text-transform:none">'+slSub[turno]+'</span></td>'+tds+'</tr>';
+      }).join('');
+      body+=(idx>0?'<div class="week-break" style="margin-top:28px"></div>':'')+
+        '<p class="sub" style="font-size:20px;margin-bottom:10px"><b style="font-size:22px">'+(weeks.length>1?'Semana '+(wi+1)+' — ':'')+fmtFull(week.start)+' → '+fmtFull(addDays(week.start,6))+'</b></p>'+
+        '<table style="margin-bottom:10px"><thead><tr><th style="width:80px"></th>'+thCols+'</tr></thead><tbody>'+rows+'</tbody></table>';
+    });
+  });
+  const _fn2=askFilename('Escala - Finais de Semana');
+  openPrintWindow(printBase(_fn2)+body+'</body></html>', _fn2);
+}
+
+function imprimirAtividades(){const dated=activities.filter(a=>a.date).sort((a,b)=>a.date.localeCompare(b.date));const undated=activities.filter(a=>!a.date);function ri(a){const p=a.personIdx!=null?people[a.personIdx]:null;const c=p?COLORS[p.colorIdx||0]:null;const meta=[];if(a.date)meta.push(fmtDate(a.date));if(a.time)meta.push(a.time+'h');if(p)meta.push('<span class="tag" style="background:'+c.bg+';color:'+c.text+'">'+p.name+'</span>');return'<li class="'+(a.done?'done':'')+'"><b>'+a.desc+'</b>'+(meta.length?' <span class="meta">'+meta.join(' · ')+'</span>':'')+'</li>';}const _fn3=askFilename('Atividades Extras');
+  openPrintWindow(printBase(_fn3)+'<h2>Atividades Extras</h2>'+(dated.length?'<div class="stitle">Com data</div><ul>'+dated.map(ri).join('')+'</ul>':'')+(undated.length?'<div class="stitle">Sem data</div><ul>'+undated.map(ri).join('')+'</ul>':'')+'</body></html>', _fn3);}
+function imprimirRemedios(){const sc={m:'#fffbec',t:'#edf7f2',n:'#eeeef8'};const items=remedios.map(r=>'<tr><td><b>'+r.nome+'</b>'+(r.dose?'<br><span style="font-size:10px;color:#9a8f84">'+r.dose+'</span>':'')+'</td><td style="background:'+sc.m+'">'+(r.manha?'✓ 07h':'')+'</td><td style="background:'+sc.t+'">'+(r.almoco?'✓ 12h':'')+'</td><td style="background:'+sc.n+'">'+(r.jantar?'✓ 18h':'')+'</td><td style="color:#9a8f84;font-size:10px">'+(r.obs||'')+'</td></tr>').join('');const _fn4=askFilename('Remédios');
+  openPrintWindow(printBase(_fn4)+'<h2>Remédios</h2><table style="margin-top:12px"><thead><tr><th>Remédio</th><th>Manhã</th><th>Almoço</th><th>Jantar</th><th>Obs.</th></tr></thead><tbody>'+(items||'<tr><td colspan="5" style="text-align:center;color:#9a8f84">Nenhum.</td></tr>')+'</tbody></table></body></html>', _fn4);}
 function compartilharTexto(secao){let texto='';if(secao==='atividades'){const dated=activities.filter(a=>a.date).sort((a,b)=>a.date.localeCompare(b.date));const undated=activities.filter(a=>!a.date);texto='📋 *ATIVIDADES EXTRAS*\n\n';if(dated.length){texto+='*Com data:*\n';dated.forEach(a=>{const pn=a.personIdx!=null&&people[a.personIdx]?' ('+people[a.personIdx].name+')':'';texto+=(a.done?'✅':'⬜')+' '+fmtDate(a.date)+(a.time?' '+a.time:'')+pn+' — '+a.desc+'\n';});}if(undated.length){texto+='\n*Avulsas:*\n';undated.forEach(a=>{const pn=a.personIdx!=null&&people[a.personIdx]?' ('+people[a.personIdx].name+')':'';texto+=(a.done?'✅':'⬜')+pn+' '+a.desc+'\n';});}}else if(secao==='remedios'){texto='💊 *REMÉDIOS*\n';
   const cats=[
     {key:'manha',label:'☀ *Manhã — 07h*'},
@@ -1007,6 +1255,187 @@ function compartilharTexto(secao){let texto='';if(secao==='atividades'){const da
     });
   });
   texto+='\n';}const url='https://wa.me/?text='+encodeURIComponent(texto);const a=document.createElement('a');a.href=url;a.target='_blank';a.rel='noopener';document.body.appendChild(a);a.click();document.body.removeChild(a);}
+
+// ══════════════════════════════════════════
+// TROCAS DE PLANTÃO — modo de seleção direta no calendário
+// ══════════════════════════════════════════
+let swapMode=false;       // true quando o "Modo Troca" está ativo
+let swapStep=0;            // 0=nada, 1=esperando clique na célula de A, 2=esperando escolha de B
+let swapPickedShift=null;  // {wi,dia,turno,diaIdx,entryIdx,personIdx}
+let swapPersonB=null;
+
+function updateTrocaCardVisibility(){
+  const card=document.getElementById('troca-card');
+  if(card) card.style.display=(weeks.length && people.length>=2)?'block':'none';
+}
+
+function toggleSwapMode(){
+  swapMode=!swapMode;
+  swapStep = swapMode ? 1 : 0;
+  swapPickedShift=null; swapPersonB=null;
+  const btn=document.getElementById('btn-modo-troca');
+  const hint=document.getElementById('swap-mode-hint');
+  if(swapMode){
+    btn.textContent='✕ Cancelar Modo Troca';
+    btn.classList.add('btn-red'); btn.classList.remove('btn-ghost');
+    hint.style.display='block';
+    hint.innerHTML='👉 Toque no turno da pessoa que vai <b>sair</b> (pessoa A) no calendário abaixo.';
+  } else {
+    btn.textContent='🔄 Ativar Modo Troca';
+    btn.classList.remove('btn-red'); btn.classList.add('btn-ghost');
+    hint.style.display='none';
+  }
+  renderCalendar();
+}
+
+function findAllFutureShiftsOf(personIdx, fromWi, fromDiaIdx, fromTurnoIdx){
+  const results=[];
+  for(let wi=fromWi; wi<weeks.length; wi++){
+    const week=weeks[wi];
+    for(let di=0; di<DIAS.length; di++){
+      if(wi===fromWi && di<fromDiaIdx) continue;
+      for(let ti=0; ti<TURNOS.length; ti++){
+        if(wi===fromWi && di===fromDiaIdx && ti<=fromTurnoIdx) continue;
+        const turno=TURNOS[ti], dia=DIAS[di];
+        const key=turno+'_'+dia;
+        const entries=week.entries[key]||[];
+        entries.forEach((entry,ei)=>{
+          if(entry.personIdx===personIdx){
+            results.push({wi,diaIdx:di,dia,turno,entryIdx:ei});
+          }
+        });
+      }
+    }
+  }
+  return results;
+}
+
+// Called from renderCalendar when a pill is clicked WHILE swap mode is active
+function handleSwapCellClick(wi,turno,dia,diaIdx,entryIdx,personIdx){
+  if(swapStep===1){
+    // Step 1: user picked person A's shift
+    swapPickedShift={wi,dia,turno,diaIdx,entryIdx,personIdx};
+    swapStep=2;
+    const week=weeks[wi]; const dayDate=addDays(week.start,diaIdx);
+    const pA=people[personIdx];
+    const hint=document.getElementById('swap-mode-hint');
+    hint.innerHTML='Turno escolhido: <b>'+pA.name+' — '+TURNO_L[turno]+' '+DIAS_FULL[diaIdx]+' '+fmt(dayDate)+'</b>.<br>👉 Agora toque em <b>qualquer turno da pessoa que vai cobrir (B)</b> para identificá-la — ou <a href="#" onclick="event.preventDefault();showSwapPersonPicker()" style="color:var(--ai);font-weight:600">escolha B numa lista</a>.';
+    renderCalendar();
+    return;
+  }
+  if(swapStep===2){
+    // Step 2: any shift clicked now identifies person B (regardless of which shift)
+    if(personIdx===swapPickedShift.personIdx){
+      setAIS('Escolha uma pessoa diferente para cobrir o turno.','err');
+      return;
+    }
+    swapPersonB=personIdx;
+    finalizeSwapPreview();
+  }
+}
+
+function showSwapPersonPicker(){
+  // Fallback: simple prompt-free picker using existing people chips logic via a quick inline list
+  const hint=document.getElementById('swap-mode-hint');
+  const pA=people[swapPickedShift.personIdx];
+  const options=people.map((p,i)=>{
+    if(i===swapPickedShift.personIdx) return '';
+    const c=COLORS[p.colorIdx||0];
+    return '<span class="popt" style="background:'+c.bg+';color:'+c.text+';margin:2px;display:inline-block" onclick="pickSwapPersonB('+i+')">'+p.name+'</span>';
+  }).join('');
+  hint.innerHTML='Quem vai cobrir <b>'+pA.name+'</b>?<br><div style="margin-top:6px">'+options+'</div>';
+}
+function pickSwapPersonB(i){
+  swapPersonB=i;
+  finalizeSwapPreview();
+}
+
+function finalizeSwapPreview(){
+  const {wi,dia,turno,diaIdx,personIdx}=swapPickedShift;
+  const pA=people[personIdx], pB=people[swapPersonB];
+  const week=weeks[wi]; const dayDate=addDays(week.start,diaIdx);
+
+  // Find B's next future shift after this point — that's where A will compensate
+  const futureOfB=findAllFutureShiftsOf(swapPersonB, wi, diaIdx, TURNOS.indexOf(turno));
+  const compTarget=futureOfB[0]||null;
+
+  const hint=document.getElementById('swap-mode-hint');
+  let html='<b>'+pB.name+'</b> cobre <b>'+pA.name+'</b> em <b>'+TURNO_L[turno]+' — '+DIAS_FULL[diaIdx]+' '+fmt(dayDate)+'</b>.<br>';
+  if(compTarget){
+    const weekC=weeks[compTarget.wi]; const dateC=addDays(weekC.start,compTarget.diaIdx);
+    html+='Compensação: <b>'+pA.name+'</b> cobrirá <b>'+pB.name+'</b> em <b>'+TURNO_L[compTarget.turno]+' — '+DIAS_FULL[compTarget.diaIdx]+' '+fmt(dateC)+'</b>.';
+  } else {
+    html+='<span style="color:#c0392b">⚠ Sem turno futuro de '+pB.name+' disponível — a troca ficará sem compensação automática.</span>';
+  }
+  html+='<div style="display:flex;gap:8px;margin-top:10px"><button class="btn btn-ghost btn-sm" onclick="toggleSwapMode();toggleSwapMode()">Recomeçar</button><button class="btn btn-copper btn-sm" onclick="confirmSwap()">✓ Confirmar troca</button></div>';
+  hint.innerHTML=html;
+  window._swapCompTarget=compTarget;
+  renderCalendar();
+}
+
+function confirmSwap(){
+  const {wi,dia,turno,entryIdx,personIdx:personA}=swapPickedShift;
+  const week1=weeks[wi];
+  const key1=turno+'_'+dia;
+  const entry1=week1.entries[key1][entryIdx];
+  entry1.personIdx=swapPersonB;
+  entry1._troca=true;
+  entry1._trocaOrig=personA;
+
+  const compTarget=window._swapCompTarget;
+  let compRecord=null;
+  if(compTarget){
+    const weekC=weeks[compTarget.wi];
+    const keyC=compTarget.turno+'_'+compTarget.dia;
+    const entryC=weekC.entries[keyC][compTarget.entryIdx];
+    entryC.personIdx=personA;
+    entryC._troca=true;
+    entryC._trocaOrig=swapPersonB;
+    compRecord={wi:compTarget.wi,dia:compTarget.dia,turno:compTarget.turno};
+  }
+
+  trocas.push({
+    personA, personB:swapPersonB,
+    wi, dia, turno,
+    compensado: !!compRecord,
+    compWi: compRecord?compRecord.wi:null,
+    compDia: compRecord?compRecord.dia:null,
+    compTurno: compRecord?compRecord.turno:null,
+    data: new Date().toISOString()
+  });
+
+  save();
+  toggleSwapMode(); // turns off swap mode, resets state
+  renderCalendar();
+  renderTrocasList();
+  setAIS('✓ Troca registrada'+(compRecord?' e compensação aplicada automaticamente.':' (pendente — sem compensação futura).'),'ok');
+}
+
+function renderTrocasList(){
+  const el=document.getElementById('trocas-list'); if(!el) return;
+  if(!trocas.length){ el.innerHTML=''; return; }
+  el.innerHTML=trocas.slice().reverse().map(t=>{
+    const pA=people[t.personA], pB=people[t.personB];
+    if(!pA||!pB) return '';
+    const weekT=weeks[t.wi]; if(!weekT) return '';
+    const diaIdx=DIAS.indexOf(t.dia);
+    const dateT=addDays(weekT.start,diaIdx);
+    let compTxt='Compensação pendente';
+    if(t.compensado && t.compWi!=null && weeks[t.compWi]){
+      const weekC=weeks[t.compWi];
+      const diaIdxC=DIAS.indexOf(t.compDia);
+      const dateC=addDays(weekC.start,diaIdxC);
+      compTxt=pA.name+' cobre '+TURNO_L[t.compTurno]+' '+fmt(dateC);
+    }
+    return '<div class="troca-list-item">'+
+      '<div class="tli-body">'+
+        '<div><b>'+pB.name+'</b> cobriu <b>'+pA.name+'</b> em '+TURNO_L[t.turno]+' '+fmt(dateT)+'</div>'+
+        '<div style="font-size:11px;color:var(--ink3);margin-top:2px">'+compTxt+'</div>'+
+      '</div>'+
+      '<span class="troca-badge '+(t.compensado?'compensado':'pendente')+'">'+(t.compensado?'✓ Compensado':'Pendente')+'</span>'+
+    '</div>';
+  }).join('');
+}
 
 // ══════════════════════════════════════════
 // INIT
